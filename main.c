@@ -1,5 +1,5 @@
 #include "memory.h"
-
+ // 되나?
 static void print_menu(void)
 {
     printf("\n==============================\n");
