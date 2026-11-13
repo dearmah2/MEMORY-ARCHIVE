@@ -112,11 +112,11 @@ static const Frame wash_frames[] = {
           { { "        @ @         ", "         X          ", "        @ @         ", BODY("O   O", "o") },
             "A CLOVER!", 900 },
             /* 10~12 기쁨 (반짝반짝 번갈아) */
-            { { "      *  @ @  +     ", "         X          ", "      +  @ @  *     ", BODY("^   ^", "v") },
+            { { "     *  @ @  +      ", "         X          ", "     +  @ @  *      ", BODY("^   ^", "v") },
               "HAPPINESS +2 !", 600 },
-            { { "      +  @ @  *     ", "         X          ", "      *  @ @  +     ", BODY("^   ^", "v") },
+            { { "     +  @ @  *      ", "         X          ", "     *  @ @  +      ", BODY("^   ^", "v") },
               "HAPPINESS +2 !", 600 },
-            { { "      *  @ @  +     ", "         X          ", "      +  @ @  *     ", BODY("^   ^", "v") },
+            { { "     *  @ @  +      ", "         X          ", "     +  @ @  *      ", BODY("^   ^", "v") },
               "HAPPINESS +2 !", 900 },
 };
 
@@ -174,18 +174,30 @@ static const Frame burn_frames[] = {
       "ALL BURNED!", 1000 },
 };
 
-static void clear_screen(void)
+/*
+ * 화면을 지우지 않고 "제자리에서 덮어쓰기" 방식으로 프레임을 갱신한다.
+ * 한 프레임이 차지하는 줄 수만큼 커서를 위로 올린 뒤 다시 그리므로,
+ * 애니메이션 위쪽의 기존 내용(휴지통 목록, 질문 등)은 그대로 남는다.
+ */
+#define FRAME_HEIGHT 13   /* 빈 줄1 + 위 테두리1 + 화면8 + 구분선1 + 문구1 + 아래 테두리1 */
+
+static int ansi_ok = 1;   /* 커서 이동(ANSI) 사용 가능 여부 */
+
+static void enable_ansi(void)
 {
 #ifdef _WIN32
-    system("cls");
-#else
-    printf("\033[2J\033[H");
+    HANDLE h = GetStdHandle(STD_OUTPUT_HANDLE);
+    DWORD mode = 0;
+    ansi_ok = 0;
+    if (h != INVALID_HANDLE_VALUE && GetConsoleMode(h, &mode)) {
+        /* 0x0004 = ENABLE_VIRTUAL_TERMINAL_PROCESSING */
+        if (SetConsoleMode(h, mode | 0x0004)) ansi_ok = 1;
+    }
 #endif
 }
 
 static void draw_frame(const Frame* f)
 {
-    clear_screen();
     printf("\n  +----------------------+\n");
     for (int i = 0; i < FRAME_LINES; i++) {
         printf("  |%-*s|\n", SCREEN_W, f->line[i]);
@@ -201,7 +213,11 @@ static void draw_frame(const Frame* f)
 
 static void play_frames(const Frame* frames, int count)
 {
+    enable_ansi();
+
     for (int i = 0; i < count; i++) {
+        /* 두 번째 프레임부터는 이전 프레임 위치로 올라가서 덮어쓴다 */
+        if (i > 0 && ansi_ok) printf("\033[%dA", FRAME_HEIGHT);
         draw_frame(&frames[i]);
         pause_ms(frames[i].delay_ms);
     }
@@ -237,7 +253,10 @@ static int process_destroy(int index)
 
     int way;
     while (1) {
-        printf("어떤 방식으로 없앨까요?\n 1. 파쇄  2. 소각\n > ");
+        static const char* const ways[] = { "1. 파쇄", "2. 소각" };
+        printf("어떤 방식으로 없앨까요?\n");
+        print_box(NULL, ways, 2, 1);
+        printf(" > ");
         way = read_int();
         if (way == 1 || way == 2) break;
         printf("[알림] 1 또는 2 를 입력해 주세요.\n");
@@ -298,11 +317,14 @@ static void handle_one_memory(void)
 
         /* 처리 방식 선택: 한 가지가 끝나면 저장하고 목록으로 돌아간다 */
         while (1) {
+            static const char* const items[] = {
+                "1. 원인이 해결되었나요?  (삭제, HAPPINESS +1)",
+                "2. 그냥 없애고 싶은가요? (파쇄 / 소각, 변화 없음)",
+                "3. 정화하고 싶은가요?    (세탁, HAPPINESS +2)",
+                "0. 다른 기억 선택"
+            };
             printf("\n이 기억을 어떻게 할까요?\n");
-            printf(" 1. 원인이 해결되었나요?  (삭제, HAPPINESS +1)\n");
-            printf(" 2. 그냥 없애고 싶은가요? (파쇄 / 소각, 변화 없음)\n");
-            printf(" 3. 정화하고 싶은가요?    (세탁, HAPPINESS +2)\n");
-            printf(" 0. 다른 기억 선택\n");
+            print_box(NULL, items, 4, 0);
             printf("선택 > ");
 
             int choice = read_int();
@@ -356,9 +378,11 @@ void menu_trash(void)
     while (1) {
         if (show_trash() == 0) return;   /* 비어 있으면 바로 메인 메뉴로 */
 
-        printf("\n 1. 기억 하나 처리하기\n");
-        printf(" 2. 휴지통 전체 비우기\n");
-        printf(" 0. 돌아가기\n");
+        static const char* const items[] = {
+            "1. 기억 하나 처리하기", "2. 휴지통 전체 비우기", "0. 돌아가기"
+        };
+        printf("\n");
+        print_box(NULL, items, 3, 0);
         printf("선택 > ");
 
         switch (read_int()) {

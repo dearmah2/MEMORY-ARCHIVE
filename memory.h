@@ -14,6 +14,14 @@
 #include <stdlib.h>
 #include <string.h>
 
+ /*
+  * 출력 간격 규칙: 사용자가 답을 입력한 뒤 나오는 다음 출력(응답 또는 다음 질문)은
+  * 항상 한 줄 띄우고 시작한다. (구현은 data.c 의 out_printf)
+  * 이 간격이 필요 없으면 아래 두 줄을 지우면 된다.
+  */
+int out_printf(const char* fmt, ...);
+#define printf out_printf
+
 #define MAX_MEMORY   1000
 #define DATE_LEN     11     /* "YYYY-MM-DD" + '\0' */
 #define CONTENT_LEN  256
@@ -43,6 +51,9 @@ int  save_data(void);
 int  read_int(void);
 void read_line(char* buf, int size);   /* 공백 포함 한 줄 입력 */
 int  ask_yes_no(const char* question); /* 1.예 2.아니오 -> 예 1 / 아니오 0 */
+/* 선택지를 네모 박스로 출력. title 은 NULL 가능,
+ * inline_mode 가 1 이면 선택지를 한 줄에 나란히(예: 1. 예   2. 아니오), 0 이면 줄마다 하나씩 */
+void print_box(const char* title, const char* const* items, int n, int inline_mode);
 int  ask_date(char* date, const char* prompt);  /* 날짜 입력(형식 검증). 성공 1 / 0 입력 취소 0 */
 int  count_archive(MemoryType type);   /* 해당 분류의 ARCHIVE 상태 기억 개수 */
 int  count_by_date(const char* date);  /* 해당 날짜의 기억 개수 (전체 상태 포함) */
@@ -71,5 +82,8 @@ void menu_trash(void);
 /* ---- happiness.c : HAPPINESS INDEX (4주차) ---- */
 void add_happiness(int delta);   /* 점수 변경은 반드시 이 함수로만 */
 void menu_happiness(void);
+
+/* ---- reset.c : 전체 초기화 ---- */
+void menu_reset(void);
 
 #endif

@@ -133,7 +133,10 @@ static int input_content(char* content)
 static MemoryType input_type(void)
 {
     while (1) {
-        printf("어떤 기억인가요? \n 1. GOOD  2. BAD \n > ");
+        static const char* const choices[] = { "1. GOOD", "2. BAD" };
+        printf("어떤 기억인가요? \n");
+        print_box(NULL, choices, 2, 1);
+        printf(" > ");
         int c = read_int();
         if (c == 1) return TYPE_GOOD;
         if (c == 2) return TYPE_BAD;
@@ -145,7 +148,10 @@ static MemoryType input_type(void)
 static int ask_continue(void)
 {
     while (1) {
-        printf("같은 날짜에 기억을 더 입력할까요? \n 1. 예  2. 아니오 \n > ");
+        static const char* const choices[] = { "1. 예", "2. 아니오" };
+        printf("같은 날짜에 기억을 더 입력할까요? \n");
+        print_box(NULL, choices, 2, 1);
+        printf(" > ");
         int c = read_int();
         if (c == 1) return 1;
         if (c == 2) return 0;
