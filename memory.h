@@ -1,4 +1,4 @@
-/*
+﻿/*
  * memory.h - 모든 .c 파일이 공유하는 헤더
  * 규칙: 각 .c 파일의 맨 첫 줄에서 #include "memory.h" 를 할 것
  *       (Visual Studio용 _CRT_SECURE_NO_WARNINGS 가 다른 include보다 먼저 정의돼야 함)
@@ -41,12 +41,20 @@ extern int    happiness;
 int  load_data(void);
 int  save_data(void);
 int  read_int(void);
-void read_line(char *buf, int size);   /* 공백 포함 한 줄 입력 */
+void read_line(char* buf, int size);   /* 공백 포함 한 줄 입력 */
+int  ask_yes_no(const char* question); /* 1.예 2.아니오 -> 예 1 / 아니오 0 */
+int  ask_date(char* date, const char* prompt);  /* 날짜 입력(형식 검증). 성공 1 / 0 입력 취소 0 */
+int  count_archive(MemoryType type);   /* 해당 분류의 ARCHIVE 상태 기억 개수 */
+int  count_by_date(const char* date);  /* 해당 날짜의 기억 개수 (전체 상태 포함) */
+int  find_memory(const char* date, int seq);  /* 날짜+번호로 index 찾기, 없으면 -1 */
 
 /* ---- record.c : RECORD (2주차) ---- */
 void menu_record(void);
+int  is_valid_date(const char* s);   /* YYYY-MM-DD 형식 + 실제 존재하는 날짜인지 확인 */
 
 /* ---- archive.c : GOOD / BAD ARCHIVE (2주차) ---- */
+int  collect_sorted(MemoryType type, MemoryStatus status, int* idx); /* 날짜->seq 순 index 목록 */
+int  show_archive(MemoryType type);   /* 목록만 출력 (출력 건수 반환) */
 void menu_good_archive(void);
 void menu_bad_archive(void);
 
@@ -57,6 +65,7 @@ void menu_search(void);
 void move_bad_to_trash(void);
 
 /* ---- trash.c : TRASH BIN 처리 (4주차) ---- */
+int  show_trash(void);   /* 휴지통 목록 출력 (출력 건수 반환) */
 void menu_trash(void);
 
 /* ---- happiness.c : HAPPINESS INDEX (4주차) ---- */

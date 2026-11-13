@@ -20,7 +20,7 @@ static int is_leap_year(int y)
 }
 
 /* "YYYY-MM-DD" 형식이고 실제로 존재하는 날짜면 1, 아니면 0 */
-static int is_valid_date(const char* s)
+int is_valid_date(const char* s)
 {
     if (strlen(s) != 10) return 0;
 
